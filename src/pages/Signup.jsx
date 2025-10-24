@@ -13,7 +13,7 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:4000/api/auth/signup", form, { withCredentials: true });
+      const res = await axios.post("https://student-backend-1-48k0.onrender.com/api/auth/signup", form, { withCredentials: true });
       if (res.data.success) {
         toast.success(res.data.message);
         navigate("/login");

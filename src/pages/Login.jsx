@@ -15,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://localhost:4000/api/auth/login",
+        "https://student-backend-1-48k0.onrender.com/api/auth/login",
         { email, password },
         { withCredentials: true }
       );
