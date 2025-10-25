@@ -9,22 +9,29 @@ const Attendance = () => {
   const [totalDays, setTotalDays] = useState("");
   const [message, setMessage] = useState("");
 
+  // ✅ Fetch both students & attendance data
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/students");
-        setStudents(res.data.students);
+        const res = await axios.get(
+          "https://student-backend-1-48k0.onrender.com/api/students"
+        );
+        setStudents(res.data?.students || []);
       } catch (err) {
         console.error("Error fetching students", err);
+        setStudents([]);
       }
     };
 
     const fetchAttendance = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/attendance");
-        setAttendance(res.data.attendance);
+        const res = await axios.get(
+          "https://student-backend-1-48k0.onrender.com/api/attendance"
+        );
+        setAttendance(res.data?.attendance || []);
       } catch (err) {
         console.error("Error fetching attendance", err);
+        setAttendance([]);
       }
     };
 
@@ -32,6 +39,7 @@ const Attendance = () => {
     fetchAttendance();
   }, []);
 
+  // ✅ Handle Save Attendance
   const handleSave = async (e) => {
     e.preventDefault();
     if (!selectedStudent || !presentDays || !totalDays) {
@@ -40,17 +48,23 @@ const Attendance = () => {
     }
 
     try {
-      await axios.post("http://localhost:4000/api/attendance", {
-        studentId: selectedStudent,
-        presentDays: Number(presentDays),
-        totalDays: Number(totalDays),
-      });
+      await axios.post(
+        "https://student-backend-1-48k0.onrender.com/api/attendance",
+        {
+          studentId: selectedStudent,
+          presentDays: Number(presentDays),
+          totalDays: Number(totalDays),
+        }
+      );
       setMessage("✅ Attendance saved successfully!");
       setPresentDays("");
       setTotalDays("");
 
-      const res = await axios.get("http://localhost:4000/api/attendance");
-      setAttendance(res.data.attendance);
+      // Refresh attendance list
+      const res = await axios.get(
+        "https://student-backend-1-48k0.onrender.com/api/attendance"
+      );
+      setAttendance(res.data?.attendance || []);
     } catch (err) {
       setMessage("❌ Error saving attendance");
       console.error(err);
@@ -62,14 +76,17 @@ const Attendance = () => {
     if (!attendance.length) return;
 
     const header = ["Student", "Roll No", "Present Days", "Total Days", "Attendance %"];
-    const rows = attendance.map(a => [
+    const rows = attendance.map((a) => [
       a.student?.name || "—",
       a.student?.rollNo || "—",
       a.presentDays,
       a.totalDays,
-      a.totalDays > 0 ? ((a.presentDays / a.totalDays) * 100).toFixed(2) + "%" : "0%"
+      a.totalDays > 0
+        ? ((a.presentDays / a.totalDays) * 100).toFixed(2) + "%"
+        : "0%",
     ]);
-    const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
+
+    const csvContent = [header, ...rows].map((e) => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -83,7 +100,7 @@ const Attendance = () => {
     <div className="p-6 bg-gray-50 min-h-screen space-y-8">
       <h2 className="text-3xl font-bold text-gray-800">📋 Mark Attendance</h2>
 
-      {/* Form */}
+      {/* Attendance Form */}
       <form
         onSubmit={handleSave}
         className="bg-gray-100 p-6 rounded-2xl shadow-lg space-y-4 w-full max-w-3xl mx-auto"
@@ -97,11 +114,12 @@ const Attendance = () => {
               className="border p-3 rounded-xl w-full focus:ring-2 focus:ring-indigo-400 outline-none"
             >
               <option value="">-- Choose Student --</option>
-              {students.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name} ({s.rollNo})
-                </option>
-              ))}
+              {Array.isArray(students) &&
+                students.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name} ({s.rollNo})
+                  </option>
+                ))}
             </select>
           </div>
 
@@ -163,7 +181,7 @@ const Attendance = () => {
             </tr>
           </thead>
           <tbody>
-            {attendance.length ? (
+            {Array.isArray(attendance) && attendance.length ? (
               attendance.map((a) => (
                 <tr key={a._id} className="hover:bg-indigo-50 transition">
                   <td className="border p-3">{a.student?.name}</td>

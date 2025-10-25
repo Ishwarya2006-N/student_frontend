@@ -1,12 +1,11 @@
-// src/context/AppContext.jsx
 import { createContext, useEffect, useState } from "react";
 import axios from "../lib/axios";
 
 export const AppContent = createContext();
 
 const AppContextProvider = ({ children }) => {
-  const [userData, setUserData] = useState(null);
-  const [isLoggedIn, setIsLoggedin] = useState(false);
+  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem("user")) || null);
+  const [isLoggedIn, setIsLoggedin] = useState(!!localStorage.getItem("token"));
   const [loadingProfile, setLoadingProfile] = useState(true);
 
   const fetchProfile = async () => {
@@ -35,6 +34,8 @@ const AppContextProvider = ({ children }) => {
     try {
       await axios.post("/auth/logout");
     } catch {}
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUserData(null);
     setIsLoggedin(false);
     window.location.href = "/login";

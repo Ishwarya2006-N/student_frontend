@@ -1,7 +1,8 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify"; // ✅ named import
+import 'react-toastify/dist/ReactToastify.css'; // ✅ import CSS
 import { AuthContext } from "../context/AuthContext";
 import loginImg from "../assets/login.png"; // your image here
 
@@ -23,28 +24,30 @@ export default function Login() {
       if (res.data.success) {
         toast.success(res.data.message);
 
-        // save user in context
+        // ✅ Save token and user
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+
+        // save in context
         setUser(res.data.user);
         setIsLoggedIn(true);
 
-        // redirect based on role
-        if (res.data.user.role === "admin") {
-          navigate("/admin/users");
-        } else {
-          navigate("/dashboard");
-        }
+        // redirect
+        if (res.data.user.role === "admin") navigate("/admin/users");
+        else navigate("/dashboard");
       } else {
         toast.error(res.data.message);
       }
     } catch (err) {
       toast.error("Login failed. Try again!");
+      console.error(err);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-6">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="bg-white shadow-2xl rounded-2xl overflow-hidden flex w-full max-w-5xl">
-        
         {/* Left Illustration */}
         <div className="hidden md:flex md:w-1/2 bg-gray-100 items-center justify-center p-10">
           <img src={loginImg} alt="login illustration" className="w-96 h-auto" />
@@ -66,6 +69,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none"
+                required
               />
             </div>
 
@@ -77,6 +81,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none"
+                required
               />
             </div>
 
@@ -88,7 +93,6 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Footer */}
           <p className="mt-6 text-center text-gray-600">
             Don’t have an account?{" "}
             <Link to="/signup" className="text-indigo-600 hover:underline font-semibold">
